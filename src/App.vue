@@ -1,6 +1,6 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated class="glossy">
+  <q-layout view="hHh lpR fFf">
+    <!-- <q-header elevated class="glossy">
       <q-toolbar>
         <q-btn
           flat
@@ -15,9 +15,9 @@
 
         <div>Quasar v{{ $q.version }}</div>
       </q-toolbar>
-    </q-header>
+    </q-header> -->
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered class="bg-grey-2">
+    <!-- <q-drawer v-model="leftDrawerOpen" show-if-above bordered class="bg-grey-2">
       <q-list>
         <q-item-label header>Essential Links</q-item-label>
         <q-item clickable tag="a" target="_blank" href="https://quasar.dev">
@@ -86,28 +86,38 @@
           </q-item-section>
         </q-item>
       </q-list>
-    </q-drawer>
+    </q-drawer> -->
 
-    <q-page-container>
-      <HelloWorld />
+    <q-page-container class="q-mt-xl q-ml-xl q-pt-xl q-pl-xl">
+      <div>
+        pakai card
+        <div>history input</div>
+        <div>input</div>
+        <div>button</div>
+      </div>
     </q-page-container>
   </q-layout>
 </template>
 
 <script>
-import { ref } from "vue";
-import HelloWorld from "./components/HelloWorld.vue";
+import { ref, computed } from "vue";
+import { useStore } from "vuex";
 
 export default {
   name: "LayoutDefault",
-
-  components: {
-    HelloWorld,
-  },
-
   setup() {
+    const store = useStore();
+
+    // COMPUTED
+    const inputHistory = computed(() => store.getters["getInputHistory"]);
+    const buttonList = computed(() => {
+      return store.getters["getButtonList"];
+    });
+
     return {
       leftDrawerOpen: ref(false),
+      inputHistory,
+      buttonList,
     };
   },
 };
