@@ -17,7 +17,7 @@ export default createStore({
       { label: "8", value: "8", isOperator: false },
       { label: "9", value: "9", isOperator: false },
       { label: "persen", value: "%", isOperator: true },
-      { label: "plusmin", value: "plusmin", isOperator: true },
+      { label: "plusmin", value: "+/-", isOperator: true },
       { label: "0", value: "0", isOperator: false },
       { label: "titik", value: ".", isOperator: true },
       { label: "hasil", value: "=", isOperator: true },

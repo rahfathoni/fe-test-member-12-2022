@@ -1,124 +1,126 @@
 <template>
-  <q-layout view="hHh lpR fFf">
-    <!-- <q-header elevated class="glossy">
-      <q-toolbar>
-        <q-btn
+  <q-layout class="bg-grey-2 cstm-text-grey" view="hHh lpR fFf">
+    <q-page-container
+      :class="'q-pt-xl ' + ($q.screen.lt.sm ? '' : 'q-ml-xl q-pl-xl')"
+    >
+      <div class="row items-start">
+        <q-card
           flat
-          dense
-          round
-          @click="leftDrawerOpen = !leftDrawerOpen"
-          aria-label="Menu"
-          icon="menu"
-        />
-
-        <q-toolbar-title> Quasar App </q-toolbar-title>
-
-        <div>Quasar v{{ $q.version }}</div>
-      </q-toolbar>
-    </q-header> -->
-
-    <!-- <q-drawer v-model="leftDrawerOpen" show-if-above bordered class="bg-grey-2">
-      <q-list>
-        <q-item-label header>Essential Links</q-item-label>
-        <q-item clickable tag="a" target="_blank" href="https://quasar.dev">
-          <q-item-section avatar>
-            <q-icon name="school" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Docs</q-item-label>
-            <q-item-label caption>quasar.dev</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item
-          clickable
-          tag="a"
-          target="_blank"
-          href="https://github.com/quasarframework/"
+          bordered
+          class="cstm-border-card"
+          style="width: 300px; height: auto"
         >
-          <q-item-section avatar>
-            <q-icon name="code" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Github</q-item-label>
-            <q-item-label caption>github.com/quasarframework</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item
-          clickable
-          tag="a"
-          target="_blank"
-          href="https://chat.quasar.dev"
-        >
-          <q-item-section avatar>
-            <q-icon name="chat" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Discord Chat Channel</q-item-label>
-            <q-item-label caption>chat.quasar.dev</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item
-          clickable
-          tag="a"
-          target="_blank"
-          href="https://forum.quasar.dev"
-        >
-          <q-item-section avatar>
-            <q-icon name="forum" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Forum</q-item-label>
-            <q-item-label caption>forum.quasar.dev</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item
-          clickable
-          tag="a"
-          target="_blank"
-          href="https://twitter.com/quasarframework"
-        >
-          <q-item-section avatar>
-            <q-icon name="rss_feed" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Twitter</q-item-label>
-            <q-item-label caption>@quasarframework</q-item-label>
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-drawer> -->
+          <q-card-section class="text-right q-mx-md">
+            <div style="font-size: 17px">{{ inputHistory }}</div>
+          </q-card-section>
 
-    <q-page-container class="q-mt-xl q-ml-xl q-pt-xl q-pl-xl">
-      <div>
-        pakai card
-        <div>history input</div>
-        <div>input</div>
-        <div>button</div>
+          <q-card-section class="q-pt-md text-right q-mx-md">
+            <!-- <q-input
+              v-model="input"
+              class="text-right"
+              style="font-size: 40px"
+              borderless
+              reverse-fill-mask
+              disable
+            /> -->
+            <div
+              style="font-size: 40px; min-height: 60px; word-wrap: break-word"
+            >
+              {{ input }}
+            </div>
+          </q-card-section>
+
+          <q-separator class="q-mx-lg" inset />
+
+          <q-card-section class="q-ml-none q-mr-md q-mb-md">
+            <div class="fit row justify-between">
+              <div class="col-9 text-right">
+                <q-btn
+                  flat
+                  rounded
+                  size="lg"
+                  class="cstm-button-cyan q-ml-md"
+                  label="C L E A R"
+                  style="width: 175px"
+                  @click="reset"
+                />
+              </div>
+              <div class="col-3">
+                <q-btn
+                  flat
+                  round
+                  class="cstm-button-yellow q-ml-md text-weight-bold cstm-btn-small"
+                  label="x"
+                />
+                <!-- bukan sebagai lable tapi mandiri -->
+              </div>
+              <div
+                v-for="item in buttonList.slice(1)"
+                :key="item"
+                class="col-3"
+              >
+                <q-btn
+                  flat
+                  round
+                  class="cstm-button-yellow q-ml-md text-weight-bold q-mt-sm cstm-btn-small"
+                  :label="item.value"
+                />
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
       </div>
     </q-page-container>
   </q-layout>
 </template>
 
 <script>
-import { ref, computed } from "vue";
+import { computed, ref } from "vue";
 import { useStore } from "vuex";
 
 export default {
   name: "LayoutDefault",
   setup() {
     const store = useStore();
+    const input = ref("test");
+    const calculation = ref(0);
 
     // COMPUTED
-    const inputHistory = computed(() => store.getters["getInputHistory"]);
+    const inputHistory = computed(() => {
+      // const test = ["23", "+", "13"];
+      // return test.join(" ");
+      const history = store.getters["getInputHistory"];
+      if (history && history.length !== 0) {
+        return history.join(" ");
+      }
+      return [];
+    });
+
     const buttonList = computed(() => {
       return store.getters["getButtonList"];
     });
 
+    //METHOD
+    const reset = () => {
+      input.value = "";
+      calculation.value = 0;
+      store.commit("resetInputHistory");
+    };
+
     return {
-      leftDrawerOpen: ref(false),
       inputHistory,
       buttonList,
+      input,
+      reset,
     };
   },
 };
 </script>
+
+<style scoped>
+.cstm-btn-small {
+  height: 52px;
+  width: 52px;
+  font-size: 17px;
+}
+</style>
