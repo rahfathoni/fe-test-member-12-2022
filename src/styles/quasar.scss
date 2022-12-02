@@ -1,0 +1,24 @@
+@import './quasar.variables.scss';
+@import '~quasar-styl';
+// @import '~quasar-addon-styl';
+
+.cstm-border-card {
+  border-color: $primary;
+  border-radius: 0px;
+}
+
+.cstm-button-cyan {
+  border-color: transparent;
+  background-color: $blueCustome;
+  @extend .cstm-text-grey;
+}
+
+.cstm-button-yellow {
+  border-color: transparent;
+  background-color: $yellowCustome;
+  @extend .cstm-text-grey;
+}
+
+.cstm-text-grey {
+  color: $greyCustome;
+}
