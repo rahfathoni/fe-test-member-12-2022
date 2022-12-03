@@ -16,8 +16,12 @@
             </div>
           </q-card-section>
 
-          <q-card-section class="q-pt-md text-right q-mx-md">
+          <q-card-section class="row q-pt-md text-right q-mx-md">
+            <div class="col-1" style="font-size: 40px">
+              {{ isResult ? "=" : "" }}
+            </div>
             <div
+              class="col-11"
               style="font-size: 40px; min-height: 60px; word-wrap: break-word"
             >
               {{ showInput }}
@@ -93,6 +97,7 @@ export default {
     const calculation = ref(0);
     const calHistory = ref([]);
     const showCal = ref("");
+    const isResult = ref(false);
 
     // COMPUTED
     const inputHistory = computed(() => {
@@ -109,6 +114,7 @@ export default {
       calculation.value = 0;
       calHistory.value = [];
       showCal.value = "";
+      isResult.value = false;
       store.commit("resetInputHistory");
     };
     const buttonColor = (val) => {
@@ -118,11 +124,19 @@ export default {
       return "cstm-button-cyan q-ml-md q-mt-sm cstm-btn-small";
     };
     const insert = (val) => {
+      isResult.value = false;
       if (val.isOperator) {
         if (!input.value) {
           return;
         }
-        store.commit("setInputHistory", parseFloat(input.value));
+        if (input.value && input.value[0] === "-" && isNaN(showInput.value)) {
+          store.commit(
+            "setInputHistory",
+            parseFloat(input.value.toString().substring(1))
+          );
+        } else {
+          store.commit("setInputHistory", parseFloat(input.value));
+        }
         // Addition
         if (val.label === "tambah") {
           addition(val);
@@ -150,42 +164,112 @@ export default {
           input.value = count;
           showCal.value = inputHistory.value.replaceAll("*", "x");
           store.commit("resetInputHistory");
+          isResult.value = true;
         }
       }
       if (!val.isOperator) {
-        // // decimal
-        // if (val.label === "titik") {
-        //   const checkComa = input.value.toString();
-        //   if (checkComa.includes(".") || !checkComa) {
-        //     return;
-        //   }
-        //   input.value = `${input.value}${val.value}`;
-        //   showInput.value = `${showInput.value}${val.value}`;
-        //   return;
-        // }
-        // // percent
-        // if (val.label === "persen") {
-        //   const checkPercent = input.value.toString();
-        //   if (checkPercent.includes("%") || !checkPercent) {
-        //     return;
-        //   }
-        //   input.value = `${parseFloat(input.value) / 100}`;
-        //   showInput.value = `${showInput.value}${input.value}`;
-        //   return;
-        // }
-        // // plus or minus
-        // if (val.label === "plusmin") {
-        //   input.value =
-        //     parseFloat(input.value) < 0
-        //       ? input.value.toString().substring(1)
-        //       : `-${input.value}`;
-        //   showInput.value = `${showInput.value}${input.value}`;
-        //   return;
-        // }
+        // Decimal
+        if (val.label === "titik") {
+          decimal(val);
+          return;
+        }
+        // percent
+        if (val.label === "persen") {
+          percent();
+          return;
+        }
+        // PlusMinus
+        if (val.label === "plusmin") {
+          const checkInput = input.value.toString();
+          if (!checkInput) {
+            return;
+          }
+          const isMinus = parseFloat(input.value) < 0;
+          input.value = isMinus
+            ? input.value.toString().substring(1)
+            : `-${input.value}`;
+          const _show = showInput.value;
+          if (!isNaN(_show)) {
+            showInput.value = input.value;
+            return;
+          }
+          const lastOperator = searchLastOperator(showInput.value) || "";
+          // console.log("lastOperator =>", lastOperator);
+          // console.log("showhistory =>", showInput.value);
+          // if (
+          //   showInput.includes('x')
+          // ) {
+          //   console.log("masukk =>");
+          //   showInput.value = `${lastOperator}${input.value}`;
+          //   return;
+          // }
+          if (
+            lastOperator &&
+            (lastOperator[lastOperator.length - 1] === "+" ||
+              lastOperator[lastOperator.length - 1] === "-")
+          ) {
+            const lastNumber = lastOperator.slice(0, -1);
+            const newOperator =
+              lastOperator[lastOperator.length - 1] === "-" ? "+" : "-";
+            store.commit("setLastInputHistory", newOperator);
+            if (
+              (lastOperator[lastOperator.length - 1] === "-" &&
+                !isNaN(input.value[0])) ||
+              (lastOperator[lastOperator.length - 1] === "+" &&
+                input.value[0] === "-")
+            ) {
+              showInput.value =
+                newOperator === "+"
+                  ? `${lastNumber}+${input.value}`
+                  : `${lastNumber}${input.value}`;
+            }
+            if (
+              (lastOperator[lastOperator.length - 1] === "-" &&
+                input.value[0] === "-") ||
+              (lastOperator[lastOperator.length - 1] === "+" &&
+                !isNaN(input.value[0]))
+            )
+              showInput.value =
+                input.value[0] === "-"
+                  ? `${lastNumber}+${input.value.toString().substring(1)}`
+                  : `${lastNumber}-${input.value}`;
+            return;
+          }
+          return;
+        }
         input.value = `${input.value}${val.value}`;
         showInput.value = `${showInput.value}${val.value}`;
         return;
       }
+    };
+    const searchLastOperator = (item) => {
+      const reverse = item.split("").reverse();
+      const operatorIndex = reverse.findIndex((x) => x !== "." && isNaN(x));
+      const removeLastInput = item.slice(0, item.length - operatorIndex);
+      return removeLastInput;
+    };
+    const decimal = (val) => {
+      const checkComa = input.value.toString();
+      if (checkComa.includes(".") || !checkComa) {
+        return;
+      }
+      input.value = `${input.value}${val.value}`;
+      showInput.value = `${showInput.value}${val.value}`;
+      return;
+    };
+    const percent = () => {
+      const checkPercent = input.value.toString();
+      if (checkPercent.includes("%") || !checkPercent) {
+        return;
+      }
+      input.value = `${parseFloat(input.value) / 100}`;
+      if (!isNaN(showInput.value)) {
+        showInput.value = input.value;
+        return;
+      }
+      const res = searchLastOperator(showInput.value);
+      showInput.value = `${res}${input.value}`;
+      return;
     };
     const addition = (val) => {
       store.commit("setInputHistory", val.value);
@@ -225,6 +309,7 @@ export default {
       showInput,
       showCal,
       inputHistory,
+      isResult,
       buttonList,
       buttonColor,
       reset,
