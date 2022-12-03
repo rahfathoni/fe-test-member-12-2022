@@ -45,14 +45,10 @@ export default createStore({
       state.inputHistory = `${data} ${val}`;
     },
     setLastInputHistory(state, val) {
-      console.log("MUT VALL =>", val);
       let data = state.inputHistory;
-      console.log("MUT DAT =>", data);
       if (data) {
         data = data.slice(0, -1);
-        console.log("MUT SLICE =>", val);
         state.inputHistory = `${data} ${val}`;
-        console.log("MUT LAS =>", state.inputHistory);
       }
     },
   },

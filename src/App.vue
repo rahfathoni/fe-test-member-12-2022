@@ -94,7 +94,6 @@ export default {
     // DATA
     const input = ref("");
     const showInput = ref("");
-    const calculation = ref(0);
     const calHistory = ref([]);
     const showCal = ref("");
     const isResult = ref(false);
@@ -111,7 +110,6 @@ export default {
     const reset = () => {
       input.value = "";
       showInput.value = "";
-      calculation.value = 0;
       calHistory.value = [];
       showCal.value = "";
       isResult.value = false;
@@ -126,10 +124,49 @@ export default {
     const insert = (val) => {
       isResult.value = false;
       if (val.isOperator) {
+        if (
+          showInput.value &&
+          showInput.value[showInput.value.length - 1] === "."
+        ) {
+          showInput.value = showInput.value.toString().slice(0, -1);
+        }
+        if (
+          inputHistory.value &&
+          (showInput.value[showInput.value.length - 1] === "+" ||
+            showInput.value[showInput.value.length - 1] === "-" ||
+            showInput.value[showInput.value.length - 1] === "/" ||
+            showInput.value[showInput.value.length - 1] === "x")
+        ) {
+          store.commit("setLastInputHistory", val.value);
+          const _removeLast = showInput.value.toString().slice(0, -1);
+          switch (val.label) {
+            case "tambah":
+              showInput.value = `${_removeLast}+`;
+              break;
+            case "kurang":
+              showInput.value = `${_removeLast}-`;
+              break;
+            case "kali":
+              showInput.value = `${_removeLast}x`;
+              break;
+            case "bagi":
+              showInput.value = `${_removeLast}/`;
+              break;
+          }
+          return;
+        }
         if (!input.value) {
           return;
         }
-        if (input.value && input.value[0] === "-" && isNaN(showInput.value)) {
+        const _searchLast = searchLastOperator(showInput.value) || "";
+        if (
+          input.value &&
+          input.value[0] === "-" &&
+          isNaN(showInput.value) &&
+          _searchLast &&
+          _searchLast[_searchLast.length - 2] !== "/" &&
+          _searchLast[_searchLast.length - 2] !== "x"
+        ) {
           store.commit(
             "setInputHistory",
             parseFloat(input.value.toString().substring(1))
@@ -173,68 +210,14 @@ export default {
           decimal(val);
           return;
         }
-        // percent
+        // Percent
         if (val.label === "persen") {
           percent();
           return;
         }
         // PlusMinus
         if (val.label === "plusmin") {
-          const checkInput = input.value.toString();
-          if (!checkInput) {
-            return;
-          }
-          const isMinus = parseFloat(input.value) < 0;
-          input.value = isMinus
-            ? input.value.toString().substring(1)
-            : `-${input.value}`;
-          const _show = showInput.value;
-          if (!isNaN(_show)) {
-            showInput.value = input.value;
-            return;
-          }
-          const lastOperator = searchLastOperator(showInput.value) || "";
-          // console.log("lastOperator =>", lastOperator);
-          // console.log("showhistory =>", showInput.value);
-          // if (
-          //   showInput.includes('x')
-          // ) {
-          //   console.log("masukk =>");
-          //   showInput.value = `${lastOperator}${input.value}`;
-          //   return;
-          // }
-          if (
-            lastOperator &&
-            (lastOperator[lastOperator.length - 1] === "+" ||
-              lastOperator[lastOperator.length - 1] === "-")
-          ) {
-            const lastNumber = lastOperator.slice(0, -1);
-            const newOperator =
-              lastOperator[lastOperator.length - 1] === "-" ? "+" : "-";
-            store.commit("setLastInputHistory", newOperator);
-            if (
-              (lastOperator[lastOperator.length - 1] === "-" &&
-                !isNaN(input.value[0])) ||
-              (lastOperator[lastOperator.length - 1] === "+" &&
-                input.value[0] === "-")
-            ) {
-              showInput.value =
-                newOperator === "+"
-                  ? `${lastNumber}+${input.value}`
-                  : `${lastNumber}${input.value}`;
-            }
-            if (
-              (lastOperator[lastOperator.length - 1] === "-" &&
-                input.value[0] === "-") ||
-              (lastOperator[lastOperator.length - 1] === "+" &&
-                !isNaN(input.value[0]))
-            )
-              showInput.value =
-                input.value[0] === "-"
-                  ? `${lastNumber}+${input.value.toString().substring(1)}`
-                  : `${lastNumber}-${input.value}`;
-            return;
-          }
+          plusMinus();
           return;
         }
         input.value = `${input.value}${val.value}`;
@@ -243,6 +226,7 @@ export default {
       }
     };
     const searchLastOperator = (item) => {
+      item = item ? item.toString() : "";
       const reverse = item.split("").reverse();
       const operatorIndex = reverse.findIndex((x) => x !== "." && isNaN(x));
       const removeLastInput = item.slice(0, item.length - operatorIndex);
@@ -268,38 +252,94 @@ export default {
         return;
       }
       const res = searchLastOperator(showInput.value);
-      showInput.value = `${res}${input.value}`;
+      showInput.value =
+        input.value[0] === "-"
+          ? `${res}${input.value.toString().substring(1)}`
+          : `${res}${input.value}`;
       return;
+    };
+    const plusMinus = () => {
+      const checkInput = input.value.toString();
+      if (!checkInput) {
+        return;
+      }
+      const isMinus = parseFloat(input.value) < 0;
+      input.value = isMinus
+        ? input.value.toString().substring(1)
+        : `-${input.value}`;
+      const _show = showInput.value;
+      if (!isNaN(_show)) {
+        showInput.value = input.value;
+        return;
+      }
+      const lastOperator = searchLastOperator(showInput.value) || "";
+      if (
+        lastOperator &&
+        (lastOperator[lastOperator.length - 1] === "/" ||
+          lastOperator[lastOperator.length - 2] === "/" ||
+          lastOperator[lastOperator.length - 1] === "x" ||
+          lastOperator[lastOperator.length - 2] === "x")
+      ) {
+        showInput.value =
+          lastOperator[lastOperator.length - 1] === "-"
+            ? `${lastOperator.toString().slice(0, -1)}${input.value}`
+            : `${lastOperator}${input.value}`;
+        return;
+      }
+      if (
+        lastOperator &&
+        (lastOperator[lastOperator.length - 1] === "+" ||
+          lastOperator[lastOperator.length - 1] === "-")
+      ) {
+        const lastNumber = lastOperator.slice(0, -1);
+        const newOperator =
+          lastOperator[lastOperator.length - 1] === "-" ? "+" : "-";
+        store.commit("setLastInputHistory", newOperator);
+        if (
+          (lastOperator[lastOperator.length - 1] === "-" &&
+            !isNaN(input.value[0])) ||
+          (lastOperator[lastOperator.length - 1] === "+" &&
+            input.value[0] === "-")
+        ) {
+          showInput.value =
+            newOperator === "+"
+              ? `${lastNumber}+${input.value}`
+              : `${lastNumber}${input.value}`;
+        }
+        if (
+          (lastOperator[lastOperator.length - 1] === "-" &&
+            input.value[0] === "-") ||
+          (lastOperator[lastOperator.length - 1] === "+" &&
+            !isNaN(input.value[0]))
+        )
+          showInput.value =
+            input.value[0] === "-"
+              ? `${lastNumber}+${input.value.toString().substring(1)}`
+              : `${lastNumber}-${input.value}`;
+        return;
+      }
     };
     const addition = (val) => {
       store.commit("setInputHistory", val.value);
       showInput.value = `${showInput.value}+`;
-      calculation.value =
-        parseFloat(calculation.value) + parseFloat(input.value);
       input.value = "";
       return;
     };
     const subtraction = (val) => {
       store.commit("setInputHistory", val.value);
       showInput.value = `${showInput.value}-`;
-      calculation.value =
-        parseFloat(calculation.value) - parseFloat(input.value);
       input.value = "";
       return;
     };
     const multiplication = (val) => {
       store.commit("setInputHistory", val.value);
       showInput.value = `${showInput.value}x`;
-      calculation.value =
-        parseFloat(calculation.value) * parseFloat(input.value);
       input.value = "";
       return;
     };
     const division = (val) => {
       store.commit("setInputHistory", val.value);
       showInput.value = `${showInput.value}/`;
-      calculation.value =
-        parseFloat(calculation.value) / parseFloat(input.value);
       input.value = "";
       return;
     };
