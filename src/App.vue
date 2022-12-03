@@ -1,8 +1,6 @@
 <template>
   <q-layout class="bg-grey-2 cstm-text-grey" view="hHh lpR fFf">
-    <q-page-container
-      :class="'q-pt-xl ' + ($q.screen.lt.sm ? '' : 'q-ml-xl q-pl-xl')"
-    >
+    <q-page-container class="row justify-center q-pt-xl">
       <div class="row items-start">
         <q-card
           flat
@@ -12,7 +10,7 @@
         >
           <q-card-section class="text-right q-mx-md">
             <div
-              style="font-size: 18px; word-wrap: break-word; min-height: 20px"
+              style="font-size: 18px; word-wrap: break-word; min-height: 28px"
             >
               {{ showCal }}
             </div>
@@ -38,7 +36,7 @@
                   class="cstm-button-cyan q-ml-md"
                   label="C L E A R"
                   style="width: 120px"
-                  @click="reset"
+                  @click.prevent="reset"
                 />
               </div>
               <div class="col-3">
@@ -46,6 +44,7 @@
                   flat
                   round
                   class="cstm-button-yellow q-ml-md cstm-btn-small"
+                  @click.prevent="insert(buttonList[0])"
                   ><span style="font-size: 21px">%</span>
                 </q-btn>
               </div>
@@ -54,6 +53,7 @@
                   flat
                   round
                   class="cstm-button-yellow q-ml-md cstm-btn-small"
+                  @click.prevent="insert(buttonList[1])"
                   ><span style="font-size: 21px">x</span>
                 </q-btn>
               </div>
@@ -123,35 +123,32 @@ export default {
           return;
         }
         store.commit("setInputHistory", parseFloat(input.value));
-        // plus
+        // Addition
         if (val.label === "tambah") {
-          store.commit("setInputHistory", val.value);
-          showInput.value = `${showInput.value}+`;
-          calculation.value =
-            parseFloat(calculation.value) + parseFloat(input.value);
-          input.value = "";
+          addition(val);
           return;
         }
-        // minus
+        // Subtraction
         if (val.label === "kurang") {
-          store.commit("setInputHistory", val.value);
-          showInput.value = `${showInput.value}-`;
-          calculation.value =
-            parseFloat(calculation.value) - parseFloat(input.value);
-          input.value = "";
+          subtraction(val);
           return;
         }
-
-        // times
-
-        // divide
-
-        // result
+        // Multiplication
+        if (val.label === "kali") {
+          multiplication(val);
+          return;
+        }
+        // Division
+        if (val.label === "bagi") {
+          division(val);
+          return;
+        }
+        // Result
         if (val.label === "hasil") {
           const count = eval(inputHistory.value);
           showInput.value = count;
           input.value = count;
-          showCal.value = inputHistory.value;
+          showCal.value = inputHistory.value.replaceAll("*", "x");
           store.commit("resetInputHistory");
         }
       }
@@ -189,6 +186,38 @@ export default {
         showInput.value = `${showInput.value}${val.value}`;
         return;
       }
+    };
+    const addition = (val) => {
+      store.commit("setInputHistory", val.value);
+      showInput.value = `${showInput.value}+`;
+      calculation.value =
+        parseFloat(calculation.value) + parseFloat(input.value);
+      input.value = "";
+      return;
+    };
+    const subtraction = (val) => {
+      store.commit("setInputHistory", val.value);
+      showInput.value = `${showInput.value}-`;
+      calculation.value =
+        parseFloat(calculation.value) - parseFloat(input.value);
+      input.value = "";
+      return;
+    };
+    const multiplication = (val) => {
+      store.commit("setInputHistory", val.value);
+      showInput.value = `${showInput.value}x`;
+      calculation.value =
+        parseFloat(calculation.value) * parseFloat(input.value);
+      input.value = "";
+      return;
+    };
+    const division = (val) => {
+      store.commit("setInputHistory", val.value);
+      showInput.value = `${showInput.value}/`;
+      calculation.value =
+        parseFloat(calculation.value) / parseFloat(input.value);
+      input.value = "";
+      return;
     };
 
     return {

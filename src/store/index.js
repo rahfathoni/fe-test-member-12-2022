@@ -4,12 +4,12 @@ export default createStore({
   state: {
     inputHistory: "",
     buttonList: [
-      { label: "kali", value: "*", isOperator: true, isSymbol: true },
       { label: "persen", value: "%", isOperator: false, isSymbol: true },
+      { label: "kali", value: "*", isOperator: true, isSymbol: true },
       { label: "1", value: "1", isOperator: false, isSymbol: false },
       { label: "2", value: "2", isOperator: false, isSymbol: false },
       { label: "3", value: "3", isOperator: false, isSymbol: false },
-      { label: "bagi", value: "/", isOperator: false, isSymbol: true },
+      { label: "bagi", value: "/", isOperator: true, isSymbol: true },
       { label: "4", value: "4", isOperator: false, isSymbol: false },
       { label: "5", value: "5", isOperator: false, isSymbol: false },
       { label: "6", value: "6", isOperator: false, isSymbol: false },
@@ -43,6 +43,13 @@ export default createStore({
         return;
       }
       state.inputHistory = `${data} ${val}`;
+    },
+    setLastInputHistory(state, val) {
+      let data = state.inputHistory;
+      if (data) {
+        data = data.slice(0, -1);
+        state.inputHistory = `${data} ${val}`;
+      }
     },
   },
   actions: {},
