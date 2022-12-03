@@ -2,25 +2,26 @@ import { createStore } from "vuex";
 
 export default createStore({
   state: {
-    inputHistory: [],
+    inputHistory: "",
     buttonList: [
-      { label: "kali", value: "*", isOperator: true },
-      { label: "1", value: "1", isOperator: false },
-      { label: "2", value: "2", isOperator: false },
-      { label: "3", value: "3", isOperator: false },
-      { label: "tambah", value: "+", isOperator: true },
-      { label: "4", value: "4", isOperator: false },
-      { label: "5", value: "5", isOperator: false },
-      { label: "6", value: "6", isOperator: false },
-      { label: "kurang", value: "-", isOperator: true },
-      { label: "7", value: "7", isOperator: false },
-      { label: "8", value: "8", isOperator: false },
-      { label: "9", value: "9", isOperator: false },
-      { label: "persen", value: "%", isOperator: true },
-      { label: "plusmin", value: "+/-", isOperator: true },
-      { label: "0", value: "0", isOperator: false },
-      { label: "titik", value: ".", isOperator: true },
-      { label: "hasil", value: "=", isOperator: true },
+      { label: "kali", value: "*", isOperator: true, isSymbol: true },
+      { label: "persen", value: "%", isOperator: false, isSymbol: true },
+      { label: "1", value: "1", isOperator: false, isSymbol: false },
+      { label: "2", value: "2", isOperator: false, isSymbol: false },
+      { label: "3", value: "3", isOperator: false, isSymbol: false },
+      { label: "bagi", value: "/", isOperator: false, isSymbol: true },
+      { label: "4", value: "4", isOperator: false, isSymbol: false },
+      { label: "5", value: "5", isOperator: false, isSymbol: false },
+      { label: "6", value: "6", isOperator: false, isSymbol: false },
+      { label: "tambah", value: "+", isOperator: true, isSymbol: true },
+      { label: "7", value: "7", isOperator: false, isSymbol: false },
+      { label: "8", value: "8", isOperator: false, isSymbol: false },
+      { label: "9", value: "9", isOperator: false, isSymbol: false },
+      { label: "kurang", value: "-", isOperator: true, isSymbol: true },
+      { label: "plusmin", value: "+/-", isOperator: false, isSymbol: true },
+      { label: "0", value: "0", isOperator: false, isSymbol: false },
+      { label: "titik", value: ".", isOperator: false, isSymbol: true },
+      { label: "hasil", value: "=", isOperator: true, isSymbol: true },
     ],
   },
   getters: {
@@ -37,8 +38,11 @@ export default createStore({
     },
     setInputHistory(state, val) {
       let data = state.inputHistory;
-      data.push(val);
-      state.inputHistory = data;
+      if (!data) {
+        state.inputHistory = val;
+        return;
+      }
+      state.inputHistory = `${data} ${val}`;
     },
   },
   actions: {},
